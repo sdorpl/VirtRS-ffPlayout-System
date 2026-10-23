@@ -18,23 +18,23 @@ export type Notification = { show: boolean, topic: string, level: NotificationLe
 
 export type NotificationLevel = "INFO" | "WARNING" | "ERROR" | "FATAL";
 
-export type Output = { id: number, label: string, enabled: boolean, inherit_resolution: boolean, share_encoding: boolean, encoding_source_id: number | null, encoding_variant: string, public_moq: boolean, mode: OutputMode, stream_url: string, stream_type: StreamType, stream_format: string, hls_playlist_name: string, hls_segment_duration: number, hls_list_size: number, desktop_fullscreen: boolean, width: number, height: number, fps: number, video_codec: string, video_options: { [key in string]: string },
+export type Output = { id: number, label: string, enabled: boolean, inherit_resolution: boolean, share_encoding: boolean, encoding_source_id: number | null, encoding_variant: string, public_moq: boolean, mode: OutputMode, stream_url: string, stream_type: StreamType, stream_format: string, hls_playlist_name: string, hls_segment_duration: number, hls_list_size: number, desktop_fullscreen: boolean, width: number, height: number, fps: number, video_codec: string, video_options: { [key in string]: string }, 
 /**
  * FFmpeg AVIO/protocol options used while opening a network stream.
  */
-protocol_options: { [key in string]: string },
+protocol_options: { [key in string]: string }, 
 /**
  * FFmpeg muxer options for this output, such as HLS `hls_flags`.
  */
-muxer_options: { [key in string]: string },
+muxer_options: { [key in string]: string }, 
 /**
  * Global container metadata. Availability depends on the output muxer.
  */
-metadata_options: { [key in string]: string }, audio_codec: string,
+metadata_options: { [key in string]: string }, audio_codec: string, 
 /**
  * FFmpeg AVOptions for the selected audio encoder.
  */
-audio_options: { [key in string]: string }, audio_bitrate: number,
+audio_options: { [key in string]: string }, audio_bitrate: number, 
 /**
  * Adaptive HLS renditions, one per entry, each formatted as
  * `NAME:WIDTHxHEIGHT:VIDEO_BITRATE[:AUDIO_BITRATE]` (e.g.
@@ -53,7 +53,7 @@ export type Playlist = { day_start: string, length: string, infinit: boolean, };
  *
  * This we init ones, when ffplayout is starting and use them globally in the hole program.
  */
-export type PlayoutConfig = { general: General, mail: Mail, notification: Notification, logging: Logging, processing: Processing, audio: Audio, ingest: Ingest, playlist: Playlist, storage: Storage, text: Text, task: Task, recording: Recording, output: Output, program: ProgramFormat | null, outputs: Array<Output>, };
+export type PlayoutConfig = { general: General, mail: Mail, notification: Notification, logging: Logging, processing: Processing, audio: Audio, ingest: Ingest, playlist: Playlist, storage: Storage, text: Text, task: Task, vizrs: Vizrs, recording: Recording, output: Output, program: ProgramFormat | null, outputs: Array<Output>, };
 
 export type ProcessMode = "folder" | "playlist";
 
@@ -70,3 +70,11 @@ export type StreamType = "rtmp" | "srt" | "udp" | "custom";
 export type Task = { enable: boolean, path: string, };
 
 export type Text = { preset_id: number | null, };
+
+/**
+ * Connection to a VizRS graphics server and the commands sent on clip start.
+ *
+ * `on_clip` and `on_ad` hold one VizRS TCP command per line, with
+ * placeholders such as `{title}` (see `utils::vizrs`).
+ */
+export type Vizrs = { enable: boolean, address: string, token: string, on_clip: string, on_ad: string, };

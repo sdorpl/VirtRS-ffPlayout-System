@@ -420,6 +420,12 @@ pub struct Configuration {
     pub task_enable: bool,
     pub task_path: String,
 
+    pub vizrs_enable: bool,
+    pub vizrs_address: String,
+    pub vizrs_token: String,
+    pub vizrs_on_clip: String,
+    pub vizrs_on_ad: String,
+
     pub output_id: i32,
 }
 
@@ -495,6 +501,11 @@ impl Configuration {
             text_preset_id: config.text.preset_id,
             task_enable: config.task.enable,
             task_path: config.task.path.to_string_lossy().to_string(),
+            vizrs_enable: config.vizrs.enable,
+            vizrs_address: config.vizrs.address,
+            vizrs_token: config.vizrs.token,
+            vizrs_on_clip: config.vizrs.on_clip,
+            vizrs_on_ad: config.vizrs.on_ad,
             output_id: config.output.id,
         }
     }

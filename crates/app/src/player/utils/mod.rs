@@ -252,6 +252,10 @@ pub struct Media {
     #[serde(default, skip_serializing_if = "is_empty_string")]
     pub custom_filter: String,
 
+    /// VizRS commands sent when this clip starts, after the channel rules.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub vizrs: Vec<String>,
+
     #[serde(skip_serializing, skip_deserializing)]
     pub probe: Option<MediaProbe>,
 
@@ -310,6 +314,7 @@ impl Media {
             source: src.to_string(),
             audio: String::new(),
             custom_filter: String::new(),
+            vizrs: Vec::new(),
             probe,
             probe_audio: None,
             last_ad: false,
@@ -395,6 +400,7 @@ impl Default for Media {
             source: String::new(),
             audio: String::new(),
             custom_filter: String::new(),
+            vizrs: Vec::new(),
             probe: None,
             probe_audio: None,
             last_ad: false,
@@ -416,6 +422,7 @@ impl PartialEq for Media {
             && self.ad == other.ad
             && self.audio == other.audio
             && self.custom_filter == other.custom_filter
+            && self.vizrs == other.vizrs
     }
 }
 

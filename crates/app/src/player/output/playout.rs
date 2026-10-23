@@ -26,6 +26,7 @@ use crate::{
         config::{ENGINE_AUDIO_SAMPLE_RATE, EncodingSource, OutputMode, PlayoutConfig},
         control::{PlayerCtl, control_state},
         errors::ServiceError,
+        vizrs,
     },
 };
 
@@ -289,6 +290,8 @@ async fn play_loop(
                 );
             }
         }
+
+        vizrs::spawn_clip_events(&manager, &node).await;
 
         let duration = playout_duration(&node);
         let is_ad = node.ad;

@@ -363,6 +363,13 @@ export default {
         taskHelp:
             'Führe ein externes Programm mit einem gegebenen Medienobjekt aus. Das Medienobjekt ist im JSON-Format und enthält alle Informationen über den aktuellen Clip. Das externe Programm kann ein Skript oder eine Binärdatei sein, sollte aber nur für kurze Zeit laufen.',
         taskPath: 'Pfad zur ausführbaren Datei.',
+        vizrs: 'VizRS graphics',
+        vizrsHelp:
+            "Send commands to a VizRS graphics server (TCP port 6100) when a clip starts. One command per line, e.g. TAKE 1001, UPDATE 2001 title={'{'}title{'}'}{'|'}next={'{'}next_title{'}'}, OUT main. Lines starting with # are ignored. Placeholders: {'{'}title{'}'}, {'{'}source{'}'}, {'{'}duration{'}'}, {'{'}next_title{'}'}, {'{'}next_start{'}'}, {'{'}next_start_full{'}'}, {'{'}next_duration{'}'}. Clips can add their own commands with a \"vizrs\" list in the playlist.",
+        vizrsAddress: 'Address of the VizRS TCP port (host:port).',
+        vizrsToken: 'VizRS token (--token), leave empty when not set.',
+        vizrsOnClip: 'Commands on start of a regular clip.',
+        vizrsOnAd: 'Commands on start of a commercial (ad) clip.',
         outputs: 'Outputs',
         settingsGeneral: 'Allgemein',
         generalSettings: 'Allgemeine Einstellungen',

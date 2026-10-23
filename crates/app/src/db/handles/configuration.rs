@@ -116,6 +116,8 @@ pub async fn select_configuration(
         storage.shuffle AS storage_shuffle,
         text.id AS text_preset_id,
         task.enable AS task_enable, task.path AS task_path,
+        vizrs.enable AS vizrs_enable, vizrs.address AS vizrs_address, vizrs.token AS vizrs_token,
+        vizrs.on_clip AS vizrs_on_clip, vizrs.on_ad AS vizrs_on_ad,
         output.id AS output_id
     FROM config c
     JOIN config_general general ON general.config_id = c.id
@@ -128,6 +130,7 @@ pub async fn select_configuration(
     JOIN config_storage storage ON storage.config_id = c.id
     LEFT JOIN config_text_presets text ON text.config_id = c.id AND text.persistent = 1
     JOIN config_task task ON task.config_id = c.id
+    JOIN config_vizrs vizrs ON vizrs.config_id = c.id
     JOIN config_output output ON output.id = (SELECT id FROM config_output WHERE config_id = c.id AND (active = 1 OR configured = 1) ORDER BY active DESC, priority, id LIMIT 1)
     WHERE c.channel_id = $1";
 
@@ -155,6 +158,7 @@ pub async fn insert_configuration(
         "INSERT INTO config_playlist (config_id) VALUES ($1)",
         "INSERT INTO config_storage (config_id) VALUES ($1)",
         "INSERT INTO config_task (config_id) VALUES ($1)",
+        "INSERT INTO config_vizrs (config_id) VALUES ($1)",
     ] {
         sqlx::query(query)
             .bind(config_id)
@@ -391,6 +395,17 @@ pub async fn update_configuration_on(
         .bind(config.task.path.to_string_lossy().to_string())
         .execute(&mut *connection)
         .await?;
+    sqlx::query(
+        "UPDATE config_vizrs SET enable = $2, address = $3, token = $4, on_clip = $5, on_ad = $6 WHERE config_id = $1",
+    )
+    .bind(id)
+    .bind(config.vizrs.enable)
+    .bind(config.vizrs.address)
+    .bind(config.vizrs.token)
+    .bind(config.vizrs.on_clip)
+    .bind(config.vizrs.on_ad)
+    .execute(&mut *connection)
+    .await?;
 
     activate_output(connection, id, config.output.id).await
 }

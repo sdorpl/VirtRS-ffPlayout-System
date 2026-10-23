@@ -417,6 +417,68 @@ async function onSubmitPlayout() {
                 </fieldset>
             </div>
 
+            <div class="text-xl pt-3 md:text-right">{{ t('config.vizrs') }}:</div>
+            <div class="md:pt-4">
+                <label class="form-control mb-2">
+                    <div class="whitespace-pre-line">
+                        {{ t('config.vizrsHelp') }}
+                    </div>
+                </label>
+
+                <fieldset class="fieldset mt-2 rounded-box w-full">
+                    <label class="fieldset-label text-base-content">
+                        <input v-model="configStore.playout.vizrs.enable" type="checkbox" class="checkbox" />
+                        {{ t('config.enable') }}
+                    </label>
+                </fieldset>
+
+                <fieldset class="fieldset">
+                    <legend class="fieldset-legend">Address</legend>
+                    <input
+                        v-model="configStore.playout.vizrs.address"
+                        type="text"
+                        name="vizrs_address"
+                        placeholder="127.0.0.1:6100"
+                        class="input input-sm w-full max-w-lg"
+                    />
+                    <p class="fieldset-label items-baseline">{{ t('config.vizrsAddress') }}</p>
+                </fieldset>
+
+                <fieldset class="fieldset">
+                    <legend class="fieldset-legend">Token</legend>
+                    <input
+                        v-model="configStore.playout.vizrs.token"
+                        type="password"
+                        name="vizrs_token"
+                        autocomplete="off"
+                        class="input input-sm w-full max-w-lg"
+                    />
+                    <p class="fieldset-label items-baseline">{{ t('config.vizrsToken') }}</p>
+                </fieldset>
+
+                <fieldset class="fieldset">
+                    <legend class="fieldset-legend">Clip</legend>
+                    <textarea
+                        v-model="configStore.playout.vizrs.on_clip"
+                        name="vizrs_on_clip"
+                        rows="4"
+                        class="textarea textarea-sm w-full max-w-lg font-mono"
+                    />
+                    <p class="fieldset-label items-baseline">{{ t('config.vizrsOnClip') }}</p>
+                </fieldset>
+
+                <fieldset class="fieldset">
+                    <legend class="fieldset-legend">Ad</legend>
+                    <textarea
+                        v-model="configStore.playout.vizrs.on_ad"
+                        name="vizrs_on_ad"
+                        rows="3"
+                        class="textarea textarea-sm w-full max-w-lg font-mono"
+                    />
+                    <p class="fieldset-label items-baseline">{{ t('config.vizrsOnAd') }}</p>
+                </fieldset>
+            </div>
+
             <div class="mt-5 mb-10">
                 <button class="btn btn-primary" type="submit">{{ t('config.save') }}</button>
             </div>

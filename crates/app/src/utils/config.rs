@@ -190,6 +190,8 @@ pub struct PlayoutConfig {
     pub storage: Storage,
     pub text: Text,
     pub task: Task,
+    #[serde(default)]
+    pub vizrs: Vizrs,
     pub recording: Recording,
     #[serde(alias = "out")]
     pub output: Output,
@@ -946,6 +948,32 @@ impl Task {
     }
 }
 
+/// Connection to a VizRS graphics server and the commands sent on clip start.
+///
+/// `on_clip` and `on_ad` hold one VizRS TCP command per line, with
+/// placeholders such as `{title}` (see `utils::vizrs`).
+#[derive(Debug, Default, Clone, Deserialize, Serialize, TS)]
+#[ts(export, export_to = "playout_config.d.ts")]
+pub struct Vizrs {
+    pub enable: bool,
+    pub address: String,
+    pub token: String,
+    pub on_clip: String,
+    pub on_ad: String,
+}
+
+impl Vizrs {
+    fn new(config: &models::Configuration) -> Self {
+        Self {
+            enable: config.vizrs_enable,
+            address: config.vizrs_address.clone(),
+            token: config.vizrs_token.clone(),
+            on_clip: config.vizrs_on_clip.clone(),
+            on_ad: config.vizrs_on_ad.clone(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "playout_config.d.ts")]
 pub struct Output {
@@ -1565,6 +1593,7 @@ impl PlayoutConfig {
         let mut playlist = Playlist::new(&config);
         let text = Text::new(&config, text_preset);
         let task = Task::new(&config);
+        let vizrs = Vizrs::new(&config);
         let recording = Recording::new(&recording_config);
         let additional_outputs = if output_id.is_some() {
             Vec::new()
@@ -1625,6 +1654,7 @@ impl PlayoutConfig {
             storage,
             text,
             task,
+            vizrs,
             recording,
             output,
             outputs: additional_outputs,

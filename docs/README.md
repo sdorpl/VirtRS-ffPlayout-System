@@ -17,6 +17,10 @@ Learn more about playing the content of a folder.
 
 Using live ingest to inject a live stream.
 
+### **[VizRS Graphics](/docs/vizrs.md)**
+
+Drive VizRS graphics from the playlist.
+
 ### **[Output Modes](/docs/output.md)**
 
 The different output modes.
