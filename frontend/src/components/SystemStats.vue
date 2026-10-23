@@ -87,7 +87,7 @@ watch([data], () => {
         </div>
         <div class="p-4 bg-base-100 flex items-center">
             <span v-if="sysStat.system.ffp_version">
-                <strong>ffplayout:</strong>
+                <strong>VizRS ffPlayout System:</strong>
                 v{{ sysStat.system.ffp_version }}
             </span>
         </div>

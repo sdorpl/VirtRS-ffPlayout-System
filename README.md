@@ -1,5 +1,12 @@
-**ffplayout**
+**VizRS ffPlayout System**
 ================
+
+Kanał 24/7 z grafiką VizRS: fork [ffplayout](https://github.com/ffplayout/ffplayout) (autor: Jonathan Baecker i współtwórcy, GPL-3.0),
+rozwijany jako playout dla [VizRS CG System](../VizRS%20CG%20System) – branding sterowany playlistą, nakładka `/output` renderowana bezgłowym Chromium,
+docelowo kontener Docker na Oracle Cloud Free (Ampere A1, arm64, bez GUI i GPU). Plan: `PLAN-kanal.md` w repozytorium VizRS CG System.
+Licencja pozostaje GPL-3.0 (plik `LICENSE`). Poniżej oryginalny opis ffplayout.
+
+---
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 

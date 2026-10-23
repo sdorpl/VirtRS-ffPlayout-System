@@ -82,7 +82,7 @@ async function submit() {
 <template>
     <div class="w-full min-h-screen flex justify-center py-10 px-4">
         <div class="w-full max-w-200">
-            <h1 class="text-4xl">ffplayout</h1>
+            <h1 class="text-4xl">VizRS ffPlayout System</h1>
             <h2 class="mt-2 text-2xl">{{ t('setup.title') }}</h2>
             <form v-if="!loading" class="mt-8 flex flex-col gap-1" @submit.prevent="submit">
                 <h3 class="text-xl">{{ t('config.global') }}</h3>

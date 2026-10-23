@@ -3,7 +3,7 @@ members = ["crates/app", "crates/engine"]
 resolver = "2"
 
 [workspace.package]
-description = "24/7 playout based on rust and ffmpeg"
+description = "VizRS ffPlayout System – 24/7 playout with VizRS graphics, fork of ffplayout"
 readme = "README.md"
 version = "2.7.0-beta.4"
 license = "GPL-3.0"

@@ -16,7 +16,7 @@ const head = createHead({
     init: [
         {
             title: 'System',
-            titleTemplate: '%s | ffplayout',
+            titleTemplate: '%s | VizRS ffPlayout System',
             htmlAttrs: { lang: 'en' },
         },
     ],
