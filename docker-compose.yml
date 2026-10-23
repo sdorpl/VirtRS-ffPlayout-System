@@ -10,7 +10,8 @@
 # Images: linux/amd64 and linux/arm64 (e.g. Oracle Cloud Ampere A1).
 #
 # The defaults below are public – before opening the ports to the internet set your own
-# values (Portainer: "Environment variables"; CLI: a .env file next to this file).
+# values (Portainer: "Environment variables", which replace stack.env; CLI: edit stack.env
+# and run docker compose --env-file stack.env up -d).
 # ADMIN_PASSWORD and the VizRS preset only apply on the very first start (empty volume).
 
 x-tokens: &tokens
