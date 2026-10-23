@@ -122,5 +122,15 @@ Chromium needs a larger `/dev/shm` than the Docker default, hence
 `shm_size: 512mb`. Keep encoding CPU-friendly on 4 Ampere cores: 720p25 or
 1080p25 with `libx264` and a fast preset.
 
+CLI commands inside the container need `env -u LISTEN`, otherwise they try
+to start a second server, e.g. generating a playlist:
+
+```sh
+docker exec playout env -u LISTEN ffplayout --db /data/db/ffplayout.db -c 1 -g 2026-10-24
+```
+
+The container clock is UTC; playlist dates follow the channel timezone
+(Settings → Channel). The HLS stream is at `/public/<channel>/live/stream.m3u8`.
+
 The image is private while the repository is private: log in first with
 `docker login ghcr.io` (a token with `read:packages`).
