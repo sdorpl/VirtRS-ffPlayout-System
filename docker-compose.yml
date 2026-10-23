@@ -1,0 +1,51 @@
+# VizRS CG System + VizRS ffPlayout System – works without any settings:
+#
+#   docker compose up -d        (or Portainer: Stacks → Add stack → paste this file → Deploy)
+#
+#   Playout panel   http://<server>:8787   login admin / admin
+#   VizRS Trio      http://<server>:8088/trio   token vizrs-operator-change-me
+#   Channel stream  http://<server>:8787/public/1/live/stream.m3u8
+#
+# Channel 1 is connected to VizRS on the first start (commands + burn-in of /output).
+# Images: linux/amd64 and linux/arm64 (e.g. Oracle Cloud Ampere A1).
+#
+# The defaults below are public – before opening the ports to the internet set your own
+# values (Portainer: "Environment variables"; CLI: a .env file next to this file).
+# ADMIN_PASSWORD and the VizRS preset only apply on the very first start (empty volume).
+
+x-tokens: &tokens
+  VIZRS_TOKEN: ${VIZRS_TOKEN:-vizrs-operator-change-me}
+  VIZRS_OUTPUT_TOKEN: ${VIZRS_OUTPUT_TOKEN:-vizrs-output-change-me}
+
+services:
+  vizrs:
+    image: ghcr.io/sdorpl/vizrs:latest
+    restart: unless-stopped
+    environment:
+      <<: *tokens
+      VIZRS_TCP: "6100"
+    volumes:
+      - vizrs-data:/data
+    ports:
+      - "8088:8088"
+
+  playout:
+    image: ghcr.io/sdorpl/vizrs-ffplayout:main
+    restart: unless-stopped
+    depends_on:
+      - vizrs
+    environment:
+      <<: *tokens
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
+      VIZRS_ADDRESS: vizrs:6100
+      VIZRS_BURN_URL: http://vizrs:8088/output?token=${VIZRS_OUTPUT_TOKEN:-vizrs-output-change-me}
+    # Chromium (burn-in) renders through /dev/shm; the Docker default of 64 MB is too small.
+    shm_size: 512mb
+    volumes:
+      - playout-data:/data
+    ports:
+      - "8787:8787"
+
+volumes:
+  vizrs-data:
+  playout-data:

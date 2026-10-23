@@ -107,7 +107,18 @@ On the first start the entrypoint creates the database and the admin user
 `/data/storage`, `/data/playlists`, `/data/logs`, `/data/public`. Media go to
 `/data/storage`. The server runs as user `10001`.
 
-For Portainer use `docker/vizrs/portainer-stack.yml` (images only, no build).
+The root `docker-compose.yml` runs VizRS and the playout from the published
+images and needs no settings: `docker compose up -d`, or in Portainer paste it
+as a stack. On the first start channel 1 is connected to VizRS (`vizrs:6100`,
+token, burn-in of `/output`). Change the default passwords and tokens
+(`ADMIN_PASSWORD`, `VIZRS_TOKEN`, `VIZRS_OUTPUT_TOKEN`) before opening the ports;
+they apply on the first start only.
+
+The entrypoint presets the VizRS settings of channel 1 from `VIZRS_ADDRESS`,
+`VIZRS_TOKEN`, `VIZRS_BURN_URL`, `VIZRS_ON_CLIP` and `VIZRS_ON_AD` when it
+creates the database. Later changes are made in the panel.
+
+`docker/vizrs/compose.yml` builds VizRS from a local checkout instead.
 
 `docker/vizrs/compose.yml` runs VizRS and the playout together, for example on
 an Oracle Cloud Free Ampere A1 instance (arm64):
