@@ -126,6 +126,8 @@ pub struct ChannelManager {
     pub loudness_meter: ff_engine::LoudnessMeterControl,
     pub audio_level: Arc<StdMutex<Option<AudioLevel>>>,
     pub text_overlay: TextOverlayState,
+    /// VizRS graphics burned into the program (see `utils::vizrs_capture`).
+    pub graphics_layer: ff_engine::GraphicsLayer,
     pub playback_control: Arc<Mutex<PlaybackControl>>,
     pub shutdown: CancellationToken,
     pub system: SystemStat,
@@ -227,6 +229,7 @@ impl ChannelManager {
             loudness_meter: ff_engine::LoudnessMeterControl::default(),
             audio_level: Arc::new(StdMutex::new(None)),
             text_overlay,
+            graphics_layer: ff_engine::GraphicsLayer::default(),
             playback_control: Arc::new(Mutex::new(PlaybackControl::default())),
             shutdown,
             system,

@@ -13,6 +13,7 @@ Enable it in **Settings → General → VizRS graphics**:
 | Token | VizRS `--token`; sent as `AUTH <token>` first. Empty when VizRS runs without a token. |
 | Clip | commands sent when a regular clip starts |
 | Ad | commands sent when a commercial (`"category": "advertisement"`) starts |
+| Burn-in | VizRS `/output` page burned into the program video, e.g. `http://127.0.0.1:8088/output`; empty = off |
 
 One command per line, using the VizRS TCP syntax (`TAKE`, `UPDATE`, `CONTINUE`,
 `OUT`, `CLEAR`, `MACRO`, `TICKER`, ...). Empty lines and lines starting with `#`
@@ -57,6 +58,29 @@ after the channel commands:
     "vizrs": ["TAKE 2001 place=Warsaw|live=LIVE"]
 }
 ```
+
+## Burn-in
+
+With **Burn-in** set, the channel starts a headless Chromium (no GPU) on that
+page when playout starts, with the browser viewport set to the channel size
+(for example 1280x720). VizRS keeps its 1920x1080 stage and scales it to the
+viewport, so do not add `?w=&h=` to the address. Other `/output` parameters
+such as `?layers=main,front` work as usual.
+
+Chromium sends a PNG frame with alpha (DevTools screencast) only when the page
+changes. ffplayout converts it once, crops it to the visible area and blends it
+over every video frame after logo and text, also over fillers and generated
+black. Static graphics therefore cost almost nothing; animations cost one PNG
+decode per changed frame.
+
+The browser is searched in `PATH` (`chromium`, `chromium-browser`,
+`google-chrome`, `google-chrome-stable`, `chrome`, `headless_shell`). Set
+`VIZRS_BROWSER` to use another binary. In containers running as root set
+`VIZRS_BROWSER_NO_SANDBOX=1`, because Chromium refuses its sandbox there.
+
+If the browser crashes or VizRS is not reachable, the graphics are cleared and
+the browser is restarted after 3 seconds; playout continues.
+Changing the setting requires a channel restart.
 
 ## Failure handling
 

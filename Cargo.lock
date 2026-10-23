@@ -2089,6 +2089,7 @@ dependencies = [
  "argon2",
  "async-walkdir",
  "axum",
+ "base64 0.22.1",
  "build-print",
  "chrono",
  "chrono-tz",

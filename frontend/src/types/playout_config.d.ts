@@ -75,6 +75,7 @@ export type Text = { preset_id: number | null, };
  * Connection to a VizRS graphics server and the commands sent on clip start.
  *
  * `on_clip` and `on_ad` hold one VizRS TCP command per line, with
- * placeholders such as `{title}` (see `utils::vizrs`).
+ * placeholders such as `{title}` (see `utils::vizrs`). `burn_url` is the
+ * VizRS `/output` page burned into the program video (empty = off).
  */
-export type Vizrs = { enable: boolean, address: string, token: string, on_clip: string, on_ad: string, };
+export type Vizrs = { enable: boolean, address: string, token: string, on_clip: string, on_ad: string, burn_url: string, };

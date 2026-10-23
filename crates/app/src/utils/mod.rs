@@ -30,6 +30,7 @@ pub mod task_runner;
 pub mod text;
 pub mod time_machine;
 pub mod vizrs;
+pub mod vizrs_capture;
 
 use crate::{
     ARGS,

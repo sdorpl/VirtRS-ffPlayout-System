@@ -26,7 +26,7 @@ use crate::{
         config::{ENGINE_AUDIO_SAMPLE_RATE, EncodingSource, OutputMode, PlayoutConfig},
         control::{PlayerCtl, control_state},
         errors::ServiceError,
-        vizrs,
+        vizrs, vizrs_capture,
     },
 };
 
@@ -56,6 +56,8 @@ pub async fn player(manager: ChannelManager) -> Result<(), ServiceError> {
         desktop_control_callback(manager.clone()),
     )?;
     output_config.output_timing_diagnostics = crate::ARGS.timing_diagnostics;
+    output_config.graphics_layer = manager.graphics_layer.clone();
+    let _burn_in = burn_in(&config, &output_config, &manager);
     let mut moq_attachments = Vec::new();
     manager.output_status.clear();
     output_config.output_status = manager.output_status.clone();
@@ -429,6 +431,35 @@ pub(super) async fn open_desktop_playout(
     Err(ServiceError::Conflict(
         "desktop output is not available because ffplayout was built without the desktop feature"
             .to_string(),
+    ))
+}
+
+/// Starts VizRS burn-in for the channel size; stops when the guard drops.
+fn burn_in(
+    config: &PlayoutConfig,
+    output_config: &OutputConfig,
+    manager: &ChannelManager,
+) -> Option<tokio_util::sync::DropGuard> {
+    let url = config.vizrs.burn_url.trim();
+
+    if !config.vizrs.enable || url.is_empty() {
+        manager.graphics_layer.clear();
+
+        return None;
+    }
+
+    let capture = vizrs_capture::CaptureConfig {
+        // No `?w=&h=`: VizRS keeps its 1920x1080 stage and scales it to the
+        // browser viewport, which is set to the channel size.
+        url: url.to_string(),
+        width: output_config.width,
+        height: output_config.height,
+        channel_id: config.general.channel_id,
+    };
+
+    Some(vizrs_capture::start(
+        capture,
+        manager.graphics_layer.clone(),
     ))
 }
 

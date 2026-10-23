@@ -425,6 +425,7 @@ pub struct Configuration {
     pub vizrs_token: String,
     pub vizrs_on_clip: String,
     pub vizrs_on_ad: String,
+    pub vizrs_burn_url: String,
 
     pub output_id: i32,
 }
@@ -506,6 +507,7 @@ impl Configuration {
             vizrs_token: config.vizrs.token,
             vizrs_on_clip: config.vizrs.on_clip,
             vizrs_on_ad: config.vizrs.on_ad,
+            vizrs_burn_url: config.vizrs.burn_url,
             output_id: config.output.id,
         }
     }

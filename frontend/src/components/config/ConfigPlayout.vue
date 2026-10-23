@@ -477,6 +477,18 @@ async function onSubmitPlayout() {
                     />
                     <p class="fieldset-label items-baseline">{{ t('config.vizrsOnAd') }}</p>
                 </fieldset>
+
+                <fieldset class="fieldset">
+                    <legend class="fieldset-legend">Burn-in</legend>
+                    <input
+                        v-model="configStore.playout.vizrs.burn_url"
+                        type="text"
+                        name="vizrs_burn_url"
+                        placeholder="http://127.0.0.1:8088/output"
+                        class="input input-sm w-full max-w-lg"
+                    />
+                    <p class="fieldset-label items-baseline">{{ t('config.vizrsBurnUrl') }}</p>
+                </fieldset>
             </div>
 
             <div class="mt-5 mb-10">

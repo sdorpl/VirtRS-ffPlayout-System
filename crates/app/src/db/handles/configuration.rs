@@ -117,7 +117,7 @@ pub async fn select_configuration(
         text.id AS text_preset_id,
         task.enable AS task_enable, task.path AS task_path,
         vizrs.enable AS vizrs_enable, vizrs.address AS vizrs_address, vizrs.token AS vizrs_token,
-        vizrs.on_clip AS vizrs_on_clip, vizrs.on_ad AS vizrs_on_ad,
+        vizrs.on_clip AS vizrs_on_clip, vizrs.on_ad AS vizrs_on_ad, vizrs.burn_url AS vizrs_burn_url,
         output.id AS output_id
     FROM config c
     JOIN config_general general ON general.config_id = c.id
@@ -396,7 +396,7 @@ pub async fn update_configuration_on(
         .execute(&mut *connection)
         .await?;
     sqlx::query(
-        "UPDATE config_vizrs SET enable = $2, address = $3, token = $4, on_clip = $5, on_ad = $6 WHERE config_id = $1",
+        "UPDATE config_vizrs SET enable = $2, address = $3, token = $4, on_clip = $5, on_ad = $6, burn_url = $7 WHERE config_id = $1",
     )
     .bind(id)
     .bind(config.vizrs.enable)
@@ -404,6 +404,7 @@ pub async fn update_configuration_on(
     .bind(config.vizrs.token)
     .bind(config.vizrs.on_clip)
     .bind(config.vizrs.on_ad)
+    .bind(config.vizrs.burn_url)
     .execute(&mut *connection)
     .await?;
 

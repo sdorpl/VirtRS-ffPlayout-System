@@ -28,6 +28,7 @@ moq-auth = "=0.2"
 futures-util = { version = "0.3", features = ["sink"] }
 tokio-tungstenite = { version = "0.30" }
 anyhow = { version = "1" }
+base64 = "0.22"
 hang = { version = "0.21" }
 moq-mux = { version = "0.10" }
 moq-relay = { version = "0.17", default-features = false, features = ["noq", "websocket"] }

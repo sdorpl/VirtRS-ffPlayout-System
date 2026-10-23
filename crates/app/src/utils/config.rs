@@ -951,7 +951,8 @@ impl Task {
 /// Connection to a VizRS graphics server and the commands sent on clip start.
 ///
 /// `on_clip` and `on_ad` hold one VizRS TCP command per line, with
-/// placeholders such as `{title}` (see `utils::vizrs`).
+/// placeholders such as `{title}` (see `utils::vizrs`). `burn_url` is the
+/// VizRS `/output` page burned into the program video (empty = off).
 #[derive(Debug, Default, Clone, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "playout_config.d.ts")]
 pub struct Vizrs {
@@ -960,6 +961,8 @@ pub struct Vizrs {
     pub token: String,
     pub on_clip: String,
     pub on_ad: String,
+    #[serde(default)]
+    pub burn_url: String,
 }
 
 impl Vizrs {
@@ -970,6 +973,7 @@ impl Vizrs {
             token: config.vizrs_token.clone(),
             on_clip: config.vizrs_on_clip.clone(),
             on_ad: config.vizrs_on_ad.clone(),
+            burn_url: config.vizrs_burn_url.clone(),
         }
     }
 }

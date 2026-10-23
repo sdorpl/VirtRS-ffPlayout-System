@@ -17,7 +17,7 @@ use ffmpeg_next::{
 
 use crate::{
     AudioEffectsControl, AudioFrameCallback, AudioLevelCallback, LiveLoudnessConfig,
-    LiveLoudnessControl, LoudnessMeterControl,
+    LiveLoudnessControl, LoudnessMeterControl, compositor::graphics::GraphicsLayer,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -280,6 +280,8 @@ pub struct OutputConfig {
     pub logo: Option<LogoConfig>,
     pub text: Option<TextConfig>,
     pub text_overlay_state: TextOverlayState,
+    /// Full-frame external graphics (VizRS), blended after logo and text.
+    pub graphics_layer: GraphicsLayer,
     pub stream_type: StreamType,
     pub stream_format: String,
     pub video_codec: String,
@@ -1436,6 +1438,7 @@ impl OutputConfig {
             logo: None,
             text: None,
             text_overlay_state: TextOverlayState::default(),
+            graphics_layer: GraphicsLayer::default(),
             stream_type: StreamType::Rtmp,
             stream_format: String::new(),
             video_codec: "libx264".to_string(),
@@ -1519,6 +1522,11 @@ impl OutputConfig {
 
     pub fn with_text_overlay_state(mut self, text_overlay_state: TextOverlayState) -> Self {
         self.text_overlay_state = text_overlay_state;
+        self
+    }
+
+    pub fn with_graphics_layer(mut self, graphics_layer: GraphicsLayer) -> Self {
+        self.graphics_layer = graphics_layer;
         self
     }
 

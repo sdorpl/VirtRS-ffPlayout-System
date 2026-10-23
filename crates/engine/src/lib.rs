@@ -34,6 +34,7 @@ pub use audio_mixer::{
     LiveLoudnessControl, LiveLoudnessMeasurement, LiveLoudnessMetrics, LiveLoudnessProcessor,
     LoudnessScope,
 };
+pub use compositor::graphics::GraphicsLayer;
 pub use input::live::{
     DEFAULT_LIVE_IDLE_TIMEOUT_MS, LiveIdleTimeout, LiveInputBackend, LiveListenerConfig,
     LiveReceiver, live_protocol_available, spawn_live_listeners, spawn_rtmp_listener,

@@ -370,6 +370,8 @@ export default {
         vizrsToken: 'VizRS token (--token), leave empty when not set.',
         vizrsOnClip: 'Commands on start of a regular clip.',
         vizrsOnAd: 'Commands on start of a commercial (ad) clip.',
+        vizrsBurnUrl:
+            'VizRS output page burned into the program video, e.g. http://127.0.0.1:8088/output. Needs Chromium on the server (or VIZRS_BROWSER). Empty = off.',
         outputs: 'Saídas',
         settingsGeneral: 'Geral',
         generalSettings: 'Configurações gerais',

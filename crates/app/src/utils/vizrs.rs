@@ -229,6 +229,7 @@ mod tests {
             on_clip: "UPDATE 2001 teraz={title}|potem={next_title} o {next_start}\n\n# comment\nTAKE 1001"
                 .to_string(),
             on_ad: "OUT main".to_string(),
+            burn_url: String::new(),
         }
     }
 

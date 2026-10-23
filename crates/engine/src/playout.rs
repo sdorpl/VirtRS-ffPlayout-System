@@ -13,7 +13,12 @@ mod pipeline;
 use crate::{
     LogoFade, PlaybackControl,
     benchmark::{self, Stage},
-    compositor::{logo::*, text::TextOverlay},
+    compositor::{
+        graphics::GraphicsLayer,
+        logo::*,
+        overlay::{OverlayFrame, blend_overlay},
+        text::TextOverlay,
+    },
     input::timestamps::LiveTimestampTracker,
     output::FrameOutput,
     utils::{
@@ -1062,11 +1067,13 @@ fn encode_composited_frame<O: FrameOutput>(
         .runtime_text
         .update(timeline.video_pts, timeline.text_pts);
     let video_opacity = media_fade_plan.video_opacity_at(timeline.video_pts);
+    // One snapshot per frame: the writable check and the blend must agree.
+    let graphics = video.graphics.current();
     let changes_pixels = video_frame_needs_write(
         video_opacity,
         video.logo.is_some(),
         video.text.is_some(),
-        video.runtime_text.overlay.is_some(),
+        video.runtime_text.overlay.is_some() || graphics.is_some(),
     );
 
     if changes_pixels {
@@ -1074,6 +1081,10 @@ fn encode_composited_frame<O: FrameOutput>(
     }
     apply_video_fade(&mut frame, video_opacity);
     apply_overlays(&mut frame, video, timeline, logo_fade_plan, output);
+
+    if let Some(graphics) = &graphics {
+        blend_overlay(&mut frame, OverlayFrame::as_ref(graphics), 1.0);
+    }
     frame.set_pts(Some(if timeline.source_timestamp_mode {
         source_pts.unwrap_or(timeline.video_pts)
     } else {
@@ -1557,6 +1568,7 @@ struct VideoDecoder {
     logo: Option<LogoOverlay>,
     text: Option<TextOverlay>,
     runtime_text: RuntimeTextOverlay,
+    graphics: GraphicsLayer,
     frame_rate_converter: FrameRateConverter,
     live_timestamps: LiveTimestampTracker,
     source_frame_duration_us: i64,
@@ -1656,6 +1668,7 @@ impl VideoDecoder {
                 .transpose()?
                 .flatten(),
             runtime_text,
+            graphics: cfg.graphics_layer.clone(),
             frame_rate_converter: FrameRateConverter::new(
                 input_time_base,
                 cfg.fps,
@@ -2296,6 +2309,7 @@ fn write_black_frames<O: FrameOutput>(
 struct FallbackOverlays {
     text: Option<TextOverlay>,
     runtime_text: RuntimeTextOverlay,
+    graphics: GraphicsLayer,
 }
 
 impl FallbackOverlays {
@@ -2333,6 +2347,7 @@ impl FallbackOverlays {
                 .transpose()?
                 .flatten(),
             runtime_text,
+            graphics: cfg.graphics_layer.clone(),
         })
     }
 
@@ -2344,6 +2359,10 @@ impl FallbackOverlays {
             .update(timeline.video_pts, timeline.text_pts);
         if let Some(text) = &mut self.runtime_text.overlay {
             text.blend(frame, timeline.video_pts, timeline.text_pts);
+        }
+
+        if let Some(graphics) = self.graphics.current() {
+            blend_overlay(frame, OverlayFrame::as_ref(&graphics), 1.0);
         }
 
         timeline.text_pts += 1;
