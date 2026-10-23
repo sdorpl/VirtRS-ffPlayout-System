@@ -25,7 +25,7 @@ Check the [releases](https://github.com/ffplayout/ffplayout/releases/latest) for
 - replace missing playlist or clip with single filler or multiple fillers from folder, if no filler exists, create dummy clip
 - playing clips in [watched](/docs/folder_mode.md) folder mode
 - send emails and [HTTP push notifications](/docs/notifications.md) for log alerts
-- send [VizRS graphics](/docs/vizrs.md) commands on clip start and burn the VizRS output into the video with headless Chromium (VizRS ffPlayout System)
+- send [VizRS graphics](/docs/vizrs.md) commands on clip start and burn the VizRS output into the video with headless Chromium; Docker image for amd64 and arm64 (VizRS ffPlayout System)
 - overlay a logo
 - overlay text, controllable through [web frontend](/frontend/)
 - loop playlist infinitely

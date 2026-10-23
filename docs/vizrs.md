@@ -87,3 +87,40 @@ Changing the setting requires a channel restart.
 Graphics never stop the playout. Commands are sent in the background, with a
 2 second limit for connecting and for each reply. Errors and `ERR` replies are
 written to the channel log; successful replies are logged at debug level.
+
+## Docker (amd64 and arm64)
+
+The root `Dockerfile` builds a server image without GUI and GPU, with
+Chromium for burn-in. The `Docker` workflow builds it natively for
+`linux/amd64` and `linux/arm64` (GitHub runner `ubuntu-24.04-arm`) and pushes
+the multi-arch image `ghcr.io/<owner>/vizrs-ffplayout` with the tags `main`,
+`sha-<commit>` and the version for `v*` tags.
+
+```sh
+docker run -d --name playout -p 8787:8787 --shm-size 512m \
+    -e ADMIN_PASSWORD=change-me -v playout-data:/data \
+    ghcr.io/sdorpl/vizrs-ffplayout:main
+```
+
+On the first start the entrypoint creates the database and the admin user
+(`ADMIN_USER`, default `admin`; `ADMIN_PASSWORD` is required) and the paths
+`/data/storage`, `/data/playlists`, `/data/logs`, `/data/public`. Media go to
+`/data/storage`. The server runs as user `10001`.
+
+`docker/vizrs/compose.yml` runs VizRS and the playout together, for example on
+an Oracle Cloud Free Ampere A1 instance (arm64):
+
+```sh
+cd docker/vizrs
+cp env.example .env      # passwords, tokens, path to the VizRS checkout
+docker compose up -d
+```
+
+Then set in **Settings → General → VizRS graphics**: Address `vizrs:6100`,
+Token = `VIZRS_TOKEN`, Burn-in `http://vizrs:8088/output?token=<VIZRS_OUTPUT_TOKEN>`.
+Chromium needs a larger `/dev/shm` than the Docker default, hence
+`shm_size: 512mb`. Keep encoding CPU-friendly on 4 Ampere cores: 720p25 or
+1080p25 with `libx264` and a fast preset.
+
+The image is private while the repository is private: log in first with
+`docker login ghcr.io` (a token with `read:packages`).
