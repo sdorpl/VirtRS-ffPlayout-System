@@ -107,6 +107,8 @@ On the first start the entrypoint creates the database and the admin user
 `/data/storage`, `/data/playlists`, `/data/logs`, `/data/public`. Media go to
 `/data/storage`. The server runs as user `10001`.
 
+For Portainer use `docker/vizrs/portainer-stack.yml` (images only, no build).
+
 `docker/vizrs/compose.yml` runs VizRS and the playout together, for example on
 an Oracle Cloud Free Ampere A1 instance (arm64):
 
