@@ -7,7 +7,7 @@
 #   Channel stream  http://<server>:8787/public/1/live/stream.m3u8
 #
 # Channel 1 is connected to VizRS on the first start (commands + burn-in of /output)
-# and starts playing right away with the test ticker (VizRS demo page 3001) burned in.
+# and starts playing right away: test card in a loop with the VizRS title page 4001 burned in.
 # Images: linux/amd64 and linux/arm64 (e.g. Oracle Cloud Ampere A1).
 #
 # The defaults below are public – before opening the ports to the internet set your own
@@ -41,10 +41,11 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
       VIZRS_ADDRESS: vizrs:6100
       VIZRS_BURN_URL: http://vizrs:8088/output?token=${VIZRS_OUTPUT_TOKEN:-vizrs-output-change-me}
-      # Test graphics: the ticker of the VizRS demo show (page 3001) is taken at every clip.
-      VIZRS_ON_CLIP: ${VIZRS_ON_CLIP:-TAKE 3001}
-      # 1 = start playout of channel 1 on the first start (empty playlist → filler with the ticker).
+      VIZRS_HTTP: http://vizrs:8088
+      # First start: test card playlists, playout started, title page 4001 of the VizRS demo taken once.
       PLAYOUT_AUTOSTART: ${PLAYOUT_AUTOSTART:-1}
+      VIZRS_START_PAGE: ${VIZRS_START_PAGE:-4001}
+      VIZRS_START_VALUES: ${VIZRS_START_VALUES:-headline=PORTAINER OK|sub=Domyślny docker-compose.yml}
     # Chromium (burn-in) renders through /dev/shm; the Docker default of 64 MB is too small.
     shm_size: 512mb
     volumes:

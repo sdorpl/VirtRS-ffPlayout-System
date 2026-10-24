@@ -37,6 +37,16 @@ RUN npm ci && \
     cp target/release/ffplayout /ffplayout && \
     /ffplayout --version
 
+# Test card for the first start (docker/entrypoint.sh): 60 s FFmpeg testsrc2 + 1 kHz tone, 720p25.
+FROM debian:trixie-slim AS card
+
+RUN apt-get update && \
+    apt-get --assume-yes install --no-install-recommends ffmpeg && \
+    ffmpeg -v error -f lavfi -i testsrc2=size=1280x720:rate=25:duration=60 \
+        -f lavfi -i sine=frequency=1000:sample_rate=48000:duration=60 \
+        -c:v libx264 -preset veryfast -crf 28 -pix_fmt yuv420p -g 50 \
+        -c:a aac -b:a 96k -shortest -movflags +faststart /plansza.mp4
+
 FROM debian:trixie-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -62,6 +72,7 @@ RUN apt-get update && \
 
 COPY --from=build /ffplayout /usr/bin/ffplayout
 COPY assets/dummy.vtt assets/logo.png /usr/share/ffplayout/
+COPY --from=card /plansza.mp4 /usr/share/ffplayout/plansza.mp4
 COPY docker/entrypoint.sh /entrypoint.sh
 
 USER 10001:10001

@@ -118,13 +118,20 @@ The entrypoint presets the VizRS settings of channel 1 from `VIZRS_ADDRESS`,
 `VIZRS_TOKEN`, `VIZRS_BURN_URL`, `VIZRS_ON_CLIP` and `VIZRS_ON_AD` when it
 creates the database. Later changes are made in the panel.
 
-Test emission out of the box: `docker-compose.yml` sets `VIZRS_ON_CLIP=TAKE 3001`
-(the ticker page of the VizRS demo show, loaded when VizRS starts with empty
-data) and `PLAYOUT_AUTOSTART=1`, which starts channel 1 once through the API on
-the first start. The channel stays active after restarts. Without a playlist the
-channel plays filler, so the ticker is taken again at every filler clip (60 s)
-and its crawl restarts; set `VIZRS_ON_CLIP` empty or `PLAYOUT_AUTOSTART=0`
-before the first start to turn this off.
+Test emission out of the box. On the first start (empty volume) the entrypoint:
+
+- copies the test card `plansza.mp4` (60 s FFmpeg `testsrc2` with a 1 kHz tone,
+  720p25, generated when the image is built) to `/data/storage`, fills the
+  playlists of the next `SEED_DAYS` days (default 31) with it and sets it as
+  filler, so later days keep playing it (`SEED_TEST_CARD=0` turns this off);
+- starts channel 1 through the API (`PLAYOUT_AUTOSTART=1`); the channel stays
+  active after restarts;
+- takes `VIZRS_START_PAGE` once through the VizRS HTTP API at `VIZRS_HTTP`,
+  with the fields of `VIZRS_START_VALUES` (`key=value|key=value`).
+  `docker-compose.yml` uses page 4001 of the VizRS demo show (title,
+  "PORTAINER OK"). VizRS does not keep graphics on air after its own restart:
+  take the page again in Trio, or use `VIZRS_ON_CLIP` to send it at every clip
+  (this restarts its animation each time).
 
 `docker/vizrs/compose.yml` builds VizRS from a local checkout instead.
 
