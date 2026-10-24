@@ -454,6 +454,7 @@ fn burn_in(
         url: url.to_string(),
         width: output_config.width,
         height: output_config.height,
+        fps: output_config.fps,
         channel_id: config.general.channel_id,
     };
 

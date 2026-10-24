@@ -24,6 +24,8 @@ use tokio_util::sync::{CancellationToken, DropGuard};
 
 const START_TIMEOUT: Duration = Duration::from_secs(15);
 const RESTART_DELAY: Duration = Duration::from_secs(3);
+/// Frame rate at which headless Chromium produces frames.
+const BROWSER_FPS: u32 = 60;
 const BROWSER_NAMES: [&str; 6] = [
     "chromium",
     "chromium-browser",
@@ -39,6 +41,8 @@ pub struct CaptureConfig {
     pub url: String,
     pub width: u32,
     pub height: u32,
+    /// Channel frame rate; frames beyond it are skipped in Chromium.
+    pub fps: u32,
     pub channel_id: i32,
 }
 
@@ -117,6 +121,16 @@ fn browser_command(browser: &Path, profile: &Path, config: &CaptureConfig) -> Co
             "--disable-renderer-backgrounding",
             "--disable-backgrounding-occluded-windows",
             "--force-device-scale-factor=1",
+            // Less background work next to the encoder (CPU-only servers
+            // such as Ampere A1).
+            "--disable-background-networking",
+            "--disable-component-update",
+            "--disable-default-apps",
+            "--disable-sync",
+            "--metrics-recording-only",
+            "--no-pings",
+            "--renderer-process-limit=1",
+            "--disable-features=Translate,MediaRouter,OptimizationHints,AutofillServerCommunication",
         ])
         .arg(format!("--user-data-dir={}", profile.display()))
         .arg(format!("--window-size={},{}", config.width, config.height))
@@ -263,6 +277,13 @@ async fn capture(
     result
 }
 
+/// Screencast step that keeps frames at or above the channel rate: 25 fps
+/// takes every second of Chromium's 60 frames, which halves PNG encoding and
+/// decoding without dropping below the channel rate.
+fn every_nth_frame(fps: u32) -> u32 {
+    (BROWSER_FPS / fps.max(1)).max(1)
+}
+
 /// The startup tab once it shows the page (it starts as `about:blank`).
 async fn page_target<S>(devtools: &mut DevTools<S>) -> Result<String, String>
 where
@@ -340,7 +361,7 @@ async fn run_session(
         .call(
             session,
             "Page.startScreencast",
-            json!({ "format": "png", "maxWidth": config.width, "maxHeight": config.height, "everyNthFrame": 1 }),
+            json!({ "format": "png", "maxWidth": config.width, "maxHeight": config.height, "everyNthFrame": every_nth_frame(config.fps) }),
         )
         .await?;
 
@@ -384,5 +405,19 @@ async fn run_session(
             Some("Target.detachedFromTarget") => return Err("page closed".to_string()),
             _ => {}
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::every_nth_frame;
+
+    #[test]
+    fn screencast_step_keeps_channel_rate() {
+        assert_eq!(every_nth_frame(25), 2);
+        assert_eq!(every_nth_frame(30), 2);
+        assert_eq!(every_nth_frame(50), 1);
+        assert_eq!(every_nth_frame(60), 1);
+        assert_eq!(every_nth_frame(0), 60);
     }
 }

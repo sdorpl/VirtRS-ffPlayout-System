@@ -29,9 +29,14 @@ RUN apt-get update && \
         pkg-config && \
     rm -rf /var/lib/apt/lists/*
 
+# Set by BuildKit. On arm64 the binary is tuned for Neoverse N1 (Ampere Altra,
+# Oracle Cloud A1); it still runs on newer Arm server cores.
+ARG TARGETARCH
+
 COPY . .
 
-RUN npm ci && \
+RUN if [ "$TARGETARCH" = arm64 ]; then export RUSTFLAGS="-C target-cpu=neoverse-n1"; fi && \
+    npm ci && \
     npm run build-only && \
     cargo build --release --locked --package ffplayout --no-default-features --features embed_frontend && \
     cp target/release/ffplayout /ffplayout && \

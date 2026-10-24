@@ -71,7 +71,10 @@ Chromium sends a PNG frame with alpha (DevTools screencast) only when the page
 changes. ffplayout converts it once, crops it to the visible area and blends it
 over every video frame after logo and text, also over fillers and generated
 black. Static graphics therefore cost almost nothing; animations cost one PNG
-decode per changed frame.
+decode per changed frame. Animations are captured no faster than needed for the
+channel frame rate: at 24–30 fps every second of Chromium's 60 frames is taken,
+which halves the PNG work. Chromium also runs with one renderer process and
+without background services (updates, sync, translation).
 
 The browser is searched in `PATH` (`chromium`, `chromium-browser`,
 `google-chrome`, `google-chrome-stable`, `chrome`, `headless_shell`). Set
@@ -94,7 +97,12 @@ The root `Dockerfile` builds a server image without GUI and GPU, with
 Chromium for burn-in. The `Docker` workflow builds it natively for
 `linux/amd64` and `linux/arm64` (GitHub runner `ubuntu-24.04-arm`) and pushes
 the multi-arch image `ghcr.io/<owner>/vizrs-ffplayout` with the tags `main`,
-`sha-<commit>` and the version for `v*` tags.
+`sha-<commit>` and the version for `v*` tags. On arm64 the binary is compiled
+for Neoverse N1 (`-C target-cpu=neoverse-n1`, Ampere Altra / Oracle Cloud A1).
+
+On a 4-OCPU A1 instance 1080p25 with burn-in fits with the default x264
+preset `faster`; if the CPU is short, set `preset=veryfast` in the output's
+video options or use 720p before going to 50 fps.
 
 ```sh
 docker run -d --name playout -p 8787:8787 --shm-size 512m \
