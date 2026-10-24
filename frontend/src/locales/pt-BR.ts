@@ -382,7 +382,7 @@ export default {
         vizrsAddress: 'Address of the VizRS TCP port (host:port).',
         vizrsToken: 'VizRS token (--token), leave empty when not set.',
         vizrsOnClip: 'Commands on start of a regular clip.',
-        vizrsOnAd: 'Commands on start of a commercial (ad) clip.',
+        vizrsOnAd: 'Commercial (ad) clips play without graphics: all layers on air are taken OUT first. Commands below are sent after that.',
         vizrsBurnUrl:
             'VizRS output page burned into the program video, e.g. http://127.0.0.1:8088/output. Needs Chromium on the server (or VIZRS_BROWSER). Empty = off.',
         outputs: 'Saídas',

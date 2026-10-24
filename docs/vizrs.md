@@ -12,7 +12,7 @@ Enable it in **Settings → General → VizRS graphics**:
 | Address | `host:port` of the VizRS TCP port, e.g. `127.0.0.1:6100` |
 | Token | VizRS `--token`; sent as `AUTH <token>` first. Empty when VizRS runs without a token. |
 | Clip | commands sent when a regular clip starts |
-| Ad | commands sent when a commercial (`"category": "advertisement"`) starts |
+| Ad | commands sent when a commercial (`"category": "advertisement"`, **Ad** checkbox) starts |
 | Burn-in | VizRS `/output` page burned into the program video, e.g. `http://127.0.0.1:8088/output`; empty = off |
 
 One command per line, using the VizRS TCP syntax (`TAKE`, `UPDATE`, `CONTINUE`,
@@ -33,20 +33,22 @@ Placeholders:
 `|` and line breaks in values are replaced, so they cannot break the
 `key=value|key=value` syntax.
 
-Example – "now / next" strap and logo off during ads:
+Commercials are played without graphics: when an ad starts, the channel asks
+VizRS for `STATE` and sends one `OUT` for every layer on air (e.g.
+`OUT main,logo`), before the **Ad** commands. The clip's own `vizrs` list is
+not sent for ads. Leave **Ad** empty unless something should come back during
+the break.
+
+Example – "now / next" strap on every clip:
 
 ```
 TAKE 4001 headline={title}|sub=Next: {next_title} at {next_start}
 ```
 
-```
-OUT main
-```
-
 ## Commands per clip
 
 A playlist item can carry its own commands in a `vizrs` list. They are sent
-after the channel commands:
+after the channel commands (not for ads):
 
 ```json
 {

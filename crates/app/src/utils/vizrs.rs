@@ -1,9 +1,10 @@
 //! Secondary events for a VizRS graphics server.
 //!
-//! When a clip starts, the channel's command template (`on_clip`, or `on_ad`
-//! for commercials) and the clip's own `vizrs` list are rendered and sent to
-//! VizRS over its line-based TCP protocol (`TAKE`, `UPDATE`, `OUT`, ...).
-//! Every command gets one `OK ...` or `ERR ...` reply line.
+//! When a clip starts, the channel's command template (`on_clip`) and the
+//! clip's own `vizrs` list are rendered and sent to VizRS over its line-based
+//! TCP protocol (`TAKE`, `UPDATE`, `OUT`, ...). Commercials are played without
+//! graphics: every layer on air is taken `OUT` first, then only the `on_ad`
+//! template is sent. Every command gets one `OK ...` or `ERR ...` reply line.
 //!
 //! Graphics are secondary: connection problems are logged, never propagated,
 //! and sending runs in a background task so playout timing is not affected.
@@ -104,21 +105,36 @@ fn render_line(line: &str, ctx: &ClipContext) -> String {
 }
 
 /// Commands for one clip: channel template first, then the clip's own list.
+/// Ads get only the `on_ad` template, their own commands are not sent.
 /// Empty lines and lines starting with `#` are ignored.
 pub fn render_commands(config: &Vizrs, media: &Media, ctx: &ClipContext) -> Vec<String> {
-    let template = if media.ad {
-        &config.on_ad
+    let (template, own): (&str, &[String]) = if media.ad {
+        (&config.on_ad, &[])
     } else {
-        &config.on_clip
+        (&config.on_clip, &media.vizrs)
     };
 
     template
         .lines()
-        .chain(media.vizrs.iter().map(String::as_str))
+        .chain(own.iter().map(String::as_str))
         .map(str::trim)
         .filter(|line| !line.is_empty() && !line.starts_with('#'))
         .map(|line| render_line(line, ctx))
         .collect()
+}
+
+/// `OUT` for every layer listed in a `STATE` reply (`OK {"layers": [...]}`).
+fn out_command(state_reply: &str) -> Option<String> {
+    let state: serde_json::Value =
+        serde_json::from_str(state_reply.strip_prefix("OK")?.trim()).ok()?;
+    let layers: Vec<&str> = state
+        .get("layers")?
+        .as_array()?
+        .iter()
+        .filter_map(|layer| layer.get("layer")?.as_str())
+        .collect();
+
+    (!layers.is_empty()).then(|| format!("OUT {}", layers.join(",")))
 }
 
 async fn read_reply(reader: &mut BufReader<TcpStream>) -> Result<String, String> {
@@ -132,8 +148,24 @@ async fn read_reply(reader: &mut BufReader<TcpStream>) -> Result<String, String>
     }
 }
 
-/// Sends commands over one connection and returns the reply for each one.
-pub async fn send(address: &str, token: &str, commands: &[String]) -> Result<Vec<String>, String> {
+async fn write_command(reader: &mut BufReader<TcpStream>, command: &str) -> Result<String, String> {
+    reader
+        .get_mut()
+        .write_all(format!("{command}\n").as_bytes())
+        .await
+        .map_err(|error| error.to_string())?;
+
+    read_reply(reader).await
+}
+
+/// Sends commands over one connection and returns each command with its reply.
+/// With `clear_first` all layers on air are taken out before the commands.
+pub async fn send(
+    address: &str,
+    token: &str,
+    commands: &[String],
+    clear_first: bool,
+) -> Result<Vec<(String, String)>, String> {
     let stream = timeout(CONNECT_TIMEOUT, TcpStream::connect(address))
         .await
         .map_err(|_| format!("connect to {address}: timeout"))?
@@ -142,25 +174,25 @@ pub async fn send(address: &str, token: &str, commands: &[String]) -> Result<Vec
     let mut replies = Vec::with_capacity(commands.len());
 
     if !token.is_empty() {
-        reader
-            .get_mut()
-            .write_all(format!("AUTH {token}\n").as_bytes())
-            .await
-            .map_err(|error| error.to_string())?;
-        let reply = read_reply(&mut reader).await?;
+        let reply = write_command(&mut reader, &format!("AUTH {token}")).await?;
 
         if !reply.starts_with("OK") {
             return Err(format!("AUTH: {reply}"));
         }
     }
 
+    if clear_first {
+        let state = write_command(&mut reader, "STATE").await?;
+
+        if let Some(out) = out_command(&state) {
+            let reply = write_command(&mut reader, &out).await?;
+            replies.push((out, reply));
+        }
+    }
+
     for command in commands {
-        reader
-            .get_mut()
-            .write_all(format!("{command}\n").as_bytes())
-            .await
-            .map_err(|error| error.to_string())?;
-        replies.push(read_reply(&mut reader).await?);
+        let reply = write_command(&mut reader, command).await?;
+        replies.push((command.clone(), reply));
     }
 
     Ok(replies)
@@ -180,8 +212,9 @@ pub async fn spawn_clip_events(manager: &ChannelManager, node: &Media) {
     };
     let ctx = ClipContext::new(node, next.as_ref());
     let commands = render_commands(&config, node, &ctx);
+    let clear_first = node.ad;
 
-    if commands.is_empty() {
+    if commands.is_empty() && !clear_first {
         return;
     }
 
@@ -190,9 +223,9 @@ pub async fn spawn_clip_events(manager: &ChannelManager, node: &Media) {
     tokio::spawn(async move {
         let _order = SEND_ORDER.lock().await;
 
-        match send(&config.address, &config.token, &commands).await {
+        match send(&config.address, &config.token, &commands, clear_first).await {
             Ok(replies) => {
-                for (command, reply) in commands.iter().zip(&replies) {
+                for (command, reply) in &replies {
                     if reply.starts_with("OK") {
                         debug!(channel = channel_id; "VizRS {command}: {reply}");
                     } else {
@@ -252,15 +285,24 @@ mod tests {
     }
 
     #[test]
-    fn ad_clips_use_ad_template_and_clip_commands_follow() {
+    fn ad_clips_use_only_ad_template() {
         let mut current = media(None, "/media/spot.mp4", true);
-        current.vizrs = vec!["CONTINUE logo".to_string(), " ".to_string()];
+        current.vizrs = vec!["TAKE 1001".to_string()];
 
         let ctx = ClipContext::new(&current, None);
         let commands = render_commands(&config(), &current, &ctx);
 
-        assert_eq!(commands, vec!["OUT main", "CONTINUE logo"]);
+        assert_eq!(commands, vec!["OUT main"]);
         assert_eq!(render_line("{duration}|{next_start}", &ctx), "00:01:30|");
+    }
+
+    #[test]
+    fn out_command_covers_layers_on_air() {
+        let reply = r#"OK {"layers":[{"layer":"main","page":"1001"},{"layer":"logo"}],"rev":3}"#;
+
+        assert_eq!(out_command(reply), Some("OUT main,logo".to_string()));
+        assert_eq!(out_command(r#"OK {"layers":[]}"#), None);
+        assert_eq!(out_command("ERR busy"), None);
     }
 
     #[tokio::test]
@@ -289,9 +331,15 @@ mod tests {
         });
 
         let commands = vec!["TAKE 1001".to_string(), "TAKE 9".to_string()];
-        let replies = send(&address, "secret", &commands).await.unwrap();
+        let replies = send(&address, "secret", &commands, false).await.unwrap();
 
-        assert_eq!(replies, vec!["OK {}", "ERR no page"]);
+        assert_eq!(
+            replies,
+            vec![
+                ("TAKE 1001".to_string(), "OK {}".to_string()),
+                ("TAKE 9".to_string(), "ERR no page".to_string()),
+            ]
+        );
         assert_eq!(
             server.await.unwrap(),
             vec!["AUTH secret", "TAKE 1001", "TAKE 9"]
@@ -304,6 +352,10 @@ mod tests {
         let address = listener.local_addr().unwrap().to_string();
         drop(listener);
 
-        assert!(send(&address, "", &["PING".to_string()]).await.is_err());
+        assert!(
+            send(&address, "", &["PING".to_string()], false)
+                .await
+                .is_err()
+        );
     }
 }
