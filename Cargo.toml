@@ -5,7 +5,7 @@ resolver = "2"
 [workspace.package]
 description = "VizRS ffPlayout System – 24/7 playout with VizRS graphics, fork of ffplayout"
 readme = "README.md"
-version = "2.7.0-beta.4"
+version = "2.7.0-beta.5"
 license = "GPL-3.0"
 repository = "https://github.com/ffplayout/ffplayout"
 authors = ["Jonathan Baecker <jonbae77@gmail.com>"]
