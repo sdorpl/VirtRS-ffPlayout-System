@@ -5,7 +5,7 @@ import LocalizedFormat from 'dayjs/plugin/localizedFormat.js'
 import timezone from 'dayjs/plugin/timezone.js'
 import utc from 'dayjs/plugin/utc.js'
 
-import { computed, ref, onMounted, onBeforeUnmount, watch, useTemplateRef } from 'vue'
+import { computed, ref, shallowRef, onMounted, onBeforeUnmount, watch, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { throttle } from 'es-toolkit/function'
 import { storeToRefs } from 'pinia'
@@ -31,6 +31,7 @@ dayjs.extend(utc)
 
 import VideoPlayer from '@/components/utils/VideoPlayer.vue'
 import MoqPlayer from '@/components/utils/MoqPlayer.vue'
+import AudioMeter from '@/components/player/AudioMeter.vue'
 
 const { t } = useI18n()
 const authStore = useAuth()
@@ -57,7 +58,7 @@ const timer = ref()
 const errorCounter = ref(0)
 const controlsUnlocked = ref(false)
 const lastReportedRunning = ref<boolean | null>(null)
-const moqAudioLevel = ref<AudioLevel | null>(null)
+const moqAudioLevel = shallowRef<AudioLevel | null>(null)
 const volumeLevel = ref(configStore.playout.audio?.volume ?? 1)
 const useMoqPreview = computed(() =>
     [configStore.playoutSaved.output, ...(configStore.playoutSaved.outputs ?? [])].some(
@@ -222,10 +223,12 @@ function timeRemaining() {
     return remaining
 }
 
-function audioMeterValue() {
-    const peak = (useMoqPreview.value ? moqAudioLevel.value : playlistStore.audioLevel)?.peak_db ?? -100
+const totalDuration = computed(() =>
+    playlistStore.playlist.reduce((total, { in: seek, out }) => total + (out - seek), 0),
+)
 
-    return Math.min(100, Math.max(0, ((peak + 60) / 60) * 100))
+function meterLevel() {
+    return useMoqPreview.value ? moqAudioLevel.value : playlistStore.audioLevel
 }
 
 function volumeIcon() {
@@ -457,14 +460,7 @@ function runControl(button: PlayerControlButton) {
                             </div>
                             <div class="h-1/4 content-center leading-5 text-sm md:text-base">
                                 <strong> {{ t('player.total') }}: </strong>
-                                {{
-                                    secToHMS(
-                                        playlistStore.playlist.reduce(
-                                            (total, { in: seek, out }) => total + (out - seek),
-                                            0,
-                                        ),
-                                    )
-                                }}
+                                {{ secToHMS(totalDuration) }}
                             </div>
                             <div class="h-1/4 content-center">
                                 <progress
@@ -484,15 +480,7 @@ function runControl(button: PlayerControlButton) {
 
             <div class="order-3 md:order-2 xl:order-3 p-1">
                 <div class="bg-base-100 h-full min-h-24 rounded-sm shadow flex items-center justify-center px-3 py-2">
-                    <div
-                        class="relative h-full min-h-20 w-4 rounded-sm overflow-hidden bg-linear-to-t from-success from-70% via-warning via-80% to-error to-100%"
-                    >
-                        <div
-                            class="absolute top-0 left-0 w-full bg-base-300"
-                            :class="useMoqPreview ? '' : 'transition-[height] duration-200'"
-                            :style="{ height: `${100 - audioMeterValue()}%` }"
-                        />
-                    </div>
+                    <AudioMeter :level="meterLevel" :smooth="!useMoqPreview" />
                 </div>
             </div>
 
