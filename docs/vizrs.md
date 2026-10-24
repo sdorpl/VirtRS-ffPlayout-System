@@ -133,19 +133,17 @@ Test emission out of the box. On the first start (empty volume) the entrypoint:
   take the page again in Trio, or use `VIZRS_ON_CLIP` to send it at every clip
   (this restarts its animation each time).
 
-`docker/vizrs/compose.yml` builds VizRS from a local checkout instead.
-
-`docker/vizrs/compose.yml` runs VizRS and the playout together, for example on
-an Oracle Cloud Free Ampere A1 instance (arm64):
+VizRS is not built here: `docker-compose.yml` pulls its image
+`ghcr.io/sdorpl/vizrs:latest`, published by the release workflow of the
+VizRS CG System repository. The same file runs VizRS and the playout
+together, for example on an Oracle Cloud Free Ampere A1 instance (arm64):
 
 ```sh
-cd docker/vizrs
-cp env.example .env      # passwords, tokens, path to the VizRS checkout
 docker compose up -d
 ```
 
-Then set in **Settings → General → VizRS graphics**: Address `vizrs:6100`,
-Token = `VIZRS_TOKEN`, Burn-in `http://vizrs:8088/output?token=<VIZRS_OUTPUT_TOKEN>`.
+The connection to VizRS (address `vizrs:6100`, token, burn-in URL) is set
+by the compose file; it can be changed in **Settings → General → VizRS graphics**.
 Chromium needs a larger `/dev/shm` than the Docker default, hence
 `shm_size: 512mb`. Keep encoding CPU-friendly on 4 Ampere cores: 720p25 or
 1080p25 with `libx264` and a fast preset.
