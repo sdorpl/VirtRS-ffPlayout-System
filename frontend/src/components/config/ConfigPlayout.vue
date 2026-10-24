@@ -17,6 +17,18 @@ const indexStore = useIndex()
 const logLevels = ['INFO', 'WARNING', 'ERROR']
 const notificationLevels = ['INFO', 'WARNING', 'ERROR', 'FATAL']
 const processingMode = ['folder', 'playlist']
+// Engine runs at whole frame rates; a stored non-standard value stays selectable.
+const frameRates = computed(() => {
+    const rates = [24, 25, 30, 50, 60]
+    const current = configStore.playout.program?.fps
+
+    if (current && !rates.includes(current)) {
+        rates.push(current)
+        rates.sort((a, b) => a - b)
+    }
+
+    return rates
+})
 const extensions = computed({
     get() {
         return configStore.playout.storage.extensions.join(',')
@@ -206,10 +218,8 @@ async function onSubmitPlayout() {
                 </label>
                 <fieldset v-if="configStore.playout.program" class="fieldset grid gap-3 sm:grid-cols-3">
                     <legend class="fieldset-legend">{{ t('config.programFormat') }}</legend>
-                    <label v-for="field in ['width', 'height', 'fps'] as const" :key="field" class="fieldset">
-                        <span class="fieldset-legend">{{
-                            t(field === 'fps' ? 'config.frameRate' : `config.${field}`)
-                        }}</span>
+                    <label v-for="field in ['width', 'height'] as const" :key="field" class="fieldset">
+                        <span class="fieldset-legend">{{ t(`config.${field}`) }}</span>
                         <input
                             v-model.number="configStore.playout.program[field]"
                             type="number"
@@ -218,6 +228,12 @@ async function onSubmitPlayout() {
                             required
                             class="input input-sm w-full"
                         />
+                    </label>
+                    <label class="fieldset">
+                        <span class="fieldset-legend">{{ t('config.frameRate') }}</span>
+                        <select v-model.number="configStore.playout.program.fps" required class="select select-sm w-full">
+                            <option v-for="fps in frameRates" :key="fps" :value="fps">{{ fps }}</option>
+                        </select>
                     </label>
                     <p class="sm:col-span-3 text-sm">{{ t('config.programFormatHelp') }}</p>
                 </fieldset>

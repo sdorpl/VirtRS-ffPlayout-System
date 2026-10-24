@@ -219,7 +219,8 @@ next processed media frame; a paused pipeline applies them when playback resumes
 Other encoding groups continue. Migration 00007 preserves
 existing selections and consolidates the new output-instance schema.
 
-**General → Processing** defines the shared program resolution and frame rate.
+**General → Processing** defines the shared program resolution and frame rate
+(chosen from 24, 25, 30, 50 and 60 fps).
 Live inputs have their own **Ingest** tab. **Outputs** appears below **Recording**
 in the settings navigation.
 Each output can inherit the program resolution or select a different resolution.
