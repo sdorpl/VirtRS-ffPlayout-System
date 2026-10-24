@@ -45,6 +45,7 @@ RUN apt-get update && \
     apt-get --assume-yes install --no-install-recommends \
         ca-certificates \
         chromium \
+        curl \
         fonts-dejavu-core \
         libasound2t64 \
         libavcodec61 \

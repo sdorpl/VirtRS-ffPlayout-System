@@ -118,6 +118,14 @@ The entrypoint presets the VizRS settings of channel 1 from `VIZRS_ADDRESS`,
 `VIZRS_TOKEN`, `VIZRS_BURN_URL`, `VIZRS_ON_CLIP` and `VIZRS_ON_AD` when it
 creates the database. Later changes are made in the panel.
 
+Test emission out of the box: `docker-compose.yml` sets `VIZRS_ON_CLIP=TAKE 3001`
+(the ticker page of the VizRS demo show, loaded when VizRS starts with empty
+data) and `PLAYOUT_AUTOSTART=1`, which starts channel 1 once through the API on
+the first start. The channel stays active after restarts. Without a playlist the
+channel plays filler, so the ticker is taken again at every filler clip (60 s)
+and its crawl restarts; set `VIZRS_ON_CLIP` empty or `PLAYOUT_AUTOSTART=0`
+before the first start to turn this off.
+
 `docker/vizrs/compose.yml` builds VizRS from a local checkout instead.
 
 `docker/vizrs/compose.yml` runs VizRS and the playout together, for example on
