@@ -11,8 +11,13 @@ toml_string() {
     printf '"%s"' "$(printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g')"
 }
 
-# Test card built into the image (Dockerfile, FFmpeg testsrc2).
+# Test card built into the image (Dockerfile, docker/plansza.mp4).
 CARD=/usr/share/ffplayout/plansza.mp4
+
+# In a container the server sets up shared storage: channel 1 keeps its media
+# and playlists in the subfolder 1.
+STORAGE=/data/storage/1
+PLAYLISTS=/data/playlists/1
 
 # Copies the test card to the storage and fills the playlists from yesterday
 # (the playout day starts at day_start) to SEED_DAYS days ahead with it; later
@@ -20,14 +25,15 @@ CARD=/usr/share/ffplayout/plansza.mp4
 seed_channel() {
     [ "${SEED_TEST_CARD:-1}" = 1 ] && [ -f "$CARD" ] || return 0
 
-    cp "$CARD" /data/storage/plansza.mp4
+    mkdir -p "$STORAGE" "$PLAYLISTS"
+    cp "$CARD" "$STORAGE/plansza.mp4"
     first=$(date -d '-1 day' +%F)
     env -u LISTEN ffplayout --db "$DB" -c 1 --generate "$first" > /dev/null
-    template=/data/playlists/$(date -d "$first" +%Y/%m)/$first.json
+    template=$PLAYLISTS/$(date -d "$first" +%Y/%m)/$first.json
 
     for day in $(seq 0 "${SEED_DAYS:-31}"); do
         date=$(date -d "$first +$day days" +%F)
-        dir=/data/playlists/$(date -d "$date" +%Y/%m)
+        dir=$PLAYLISTS/$(date -d "$date" +%Y/%m)
         mkdir -p "$dir"
         [ -f "$dir/$date.json" ] ||
             sed "s/\"date\": *\"$first\"/\"date\": \"$date\"/" "$template" > "$dir/$date.json"
@@ -50,7 +56,7 @@ preset_channel() {
         cp ffplayout_1.toml config.toml
     fi
 
-    if [ -f /data/storage/plansza.mp4 ]; then
+    if [ -f "$STORAGE/plansza.mp4" ]; then
         sed -i 's|^filler = .*|filler = "plansza.mp4"|' config.toml
     fi
 

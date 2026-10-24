@@ -104,8 +104,9 @@ docker run -d --name playout -p 8787:8787 --shm-size 512m \
 
 On the first start the entrypoint creates the database and the admin user
 (`ADMIN_USER`, default `admin`; `ADMIN_PASSWORD` is required) and the paths
-`/data/storage`, `/data/playlists`, `/data/logs`, `/data/public`. Media go to
-`/data/storage`. The server runs as user `10001`.
+`/data/storage`, `/data/playlists`, `/data/logs`, `/data/public`. In a container
+the storage is shared, so channel 1 uses the subfolders `1`: media go to
+`/data/storage/1`, playlists to `/data/playlists/1`. The server runs as user `10001`.
 
 The root `docker-compose.yml` runs VizRS and the playout from the published
 images and needs no settings: `docker compose up -d`, or in Portainer paste it
@@ -120,8 +121,8 @@ creates the database. Later changes are made in the panel.
 
 Test emission out of the box. On the first start (empty volume) the entrypoint:
 
-- copies the test card `plansza.mp4` (60 s FFmpeg `testsrc2` with a 1 kHz tone,
-  720p25, generated when the image is built) to `/data/storage`, fills the
+- copies the test card `plansza.mp4` (`docker/plansza.mp4`, 1080p25, 60 s,
+  built into the image) to `/data/storage/1`, fills the
   playlists of the next `SEED_DAYS` days (default 31) with it and sets it as
   filler, so later days keep playing it (`SEED_TEST_CARD=0` turns this off);
 - starts channel 1 through the API (`PLAYOUT_AUTOSTART=1`); the channel stays
