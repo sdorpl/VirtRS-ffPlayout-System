@@ -52,6 +52,12 @@ const router = createRouter({
             meta: { showHeader: true },
         },
         {
+            path: '/epg',
+            name: 'epg',
+            component: () => import('@/views/EpgView.vue'),
+            meta: { showHeader: true },
+        },
+        {
             path: '/message',
             name: 'message',
             component: () => import('@/views/MessageView.vue'),

@@ -17,6 +17,7 @@ export default {
         channels: 'Channels',
         configure: 'Configure',
         logout: 'Logout',
+        epg: 'EPG',
     },
     error: {
         notFound: 'Page not found',
@@ -128,6 +129,18 @@ export default {
         uploadError: 'Upload error',
         fileExists: 'File exists already!',
         recursive: 'Recursive',
+    },
+    epg: {
+        title: 'Electronic programme guide',
+        days: 'Days',
+        refresh: 'Refresh',
+        download: 'Download XMLTV',
+        empty: 'No programmes in the selected range.',
+        start: 'Start',
+        stop: 'End',
+        programme: 'Programme',
+        duration: 'Duration',
+        hint: 'Generated from the daily playlists (commercial breaks are skipped). Titles come from the playlist title or the file name.',
     },
     message: {
         savePreset: 'Save Preset',

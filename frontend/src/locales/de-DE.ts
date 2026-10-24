@@ -17,6 +17,7 @@ export default {
         channels: 'Kanäle',
         configure: 'Einstellungen',
         logout: 'Abmelden',
+        epg: 'EPG',
     },
     error: {
         notFound: 'Seite nicht gefunden',
@@ -128,6 +129,18 @@ export default {
         uploadError: 'Fehler beim Hochladen',
         fileExists: 'Datei existiert bereits!',
         recursive: 'Rekursiv',
+    },
+    epg: {
+        title: 'Elektronischer Programmführer',
+        days: 'Tage',
+        refresh: 'Aktualisieren',
+        download: 'XMLTV herunterladen',
+        empty: 'Keine Sendungen im gewählten Zeitraum.',
+        start: 'Beginn',
+        stop: 'Ende',
+        programme: 'Sendung',
+        duration: 'Dauer',
+        hint: 'Erstellt aus den Tageswiedergabelisten (Werbung wird ausgelassen). Titel stammen aus dem Playlist-Titel oder dem Dateinamen.',
     },
     message: {
         savePreset: 'Voreinstellung speichern',

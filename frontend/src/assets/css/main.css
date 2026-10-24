@@ -2,6 +2,7 @@
 @import 'splitpanes/dist/splitpanes.css';
 @import 'tailwindcss';
 @plugin "daisyui";
+@import './vizrs.css';
 
 @plugin "daisyui/theme" {
     name: 'ffp-light';
@@ -35,7 +36,7 @@
 
 @plugin "daisyui/theme" {
     name: 'ffp-dark';
-    default: true;
+    default: false;
     color-scheme: dark;
 
     --color-primary: #3b3b3b;

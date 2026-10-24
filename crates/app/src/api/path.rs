@@ -73,6 +73,7 @@ pub fn routes() -> Router<AppState> {
                     put(update_preset).delete(delete_preset),
                 )
                 .route("/presets/{id}", post(add_preset))
+                .route("/epg/{id}", get(get_epg))
                 .route("/program/{id}", get(get_program))
                 .route("/setup", get(get_setup_status).post(complete_setup))
                 .route("/system/{id}", get(get_system_stat))

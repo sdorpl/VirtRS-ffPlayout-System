@@ -164,6 +164,7 @@ curl -X POST http://127.0.0.1:8787/api/control/1/process \
 | `POST` | `/api/playlist/{id}/generate/{date}` | `GA, CA, U` | Generate and save a playlist. Body is optional: `{ "paths": ["..."], "shuffle": true, "template": { ... } }`. |
 | `DELETE` | `/api/playlist/{id}/{date}` | `GA, CA, U` | Delete a playlist. |
 | `GET` | `/api/program/{id}` | `GA, CA, U` | Read programme items. Optional `start_after` and `start_before` query parameters accept local ISO date-times. |
+| `GET` | `/api/epg/{id}` | `GA, CA, U` | XMLTV guide (`application/xml`) built from the daily playlists, starting today in the channel timezone. Optional `days` (1–14, default 3). Commercial breaks are skipped; the title falls back to the file name. Channel id in the guide is `vizrs.{id}`. |
 | `GET` | `/api/log/{id}` | `GA, CA, U` | Read a log. Optional query parameters: `date`, `timezone`, `download`. |
 | `GET` | `/api/system/{id}` | `GA, CA, U` | Read system statistics for the channel. |
 

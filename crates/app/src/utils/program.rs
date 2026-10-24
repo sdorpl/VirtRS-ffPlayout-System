@@ -16,20 +16,20 @@ use crate::{
 #[derive(Debug, Deserialize, Clone)]
 pub struct ProgramObj {
     #[serde(default, deserialize_with = "optional_naive_date_time_from_str")]
-    start_after: Option<NaiveDateTime>,
+    pub start_after: Option<NaiveDateTime>,
     #[serde(default, deserialize_with = "optional_naive_date_time_from_str")]
-    start_before: Option<NaiveDateTime>,
+    pub start_before: Option<NaiveDateTime>,
 }
 
 #[derive(Debug, Serialize)]
 pub struct ProgramItem {
-    source: String,
-    start: String,
-    title: Option<String>,
-    r#in: f64,
-    out: f64,
-    duration: f64,
-    ad: bool,
+    pub source: String,
+    pub start: String,
+    pub title: Option<String>,
+    pub r#in: f64,
+    pub out: f64,
+    pub duration: f64,
+    pub ad: bool,
 }
 
 pub async fn build_program(

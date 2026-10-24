@@ -27,6 +27,7 @@ use tokio_util::io::ReaderStream;
 
 mod channel;
 mod control;
+mod epg;
 mod file;
 mod global;
 mod log;
@@ -41,6 +42,7 @@ mod user;
 
 pub use channel::*;
 pub use control::*;
+pub use epg::*;
 pub use file::*;
 pub use global::*;
 pub use log::*;

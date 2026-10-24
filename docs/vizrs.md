@@ -147,3 +147,14 @@ The container clock is UTC; playlist dates follow the channel timezone
 
 The image is private while the repository is private: log in first with
 `docker login ghcr.io` (a token with `read:packages`).
+
+## Panel look and EPG
+
+The panel uses the VizRS themes `vizrs-dark` (default) and `vizrs-light`
+(`frontend/src/assets/css/vizrs.css`): the colours, compact panels and top bar
+of VizRS Artist/Trio, with the channel clock in the top bar.
+
+The **EPG** page lists the guide for the next 1–14 days and downloads it as
+XMLTV; the same document is served by `GET /api/epg/{id}?days=N` (see
+[api.md](api.md)). This is the base for a full XMLTV EPG: descriptions,
+categories and an unauthenticated feed URL for IPTV clients are not there yet.

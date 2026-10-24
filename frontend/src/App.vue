@@ -42,12 +42,12 @@ onBeforeMount(() => {
 useHead({
     htmlAttrs: {
         lang: computed(() => locale.value),
-        'data-theme': computed(() => (indexStore.darkMode ? 'ffp-dark' : 'ffp-light')),
+        'data-theme': computed(() => (indexStore.darkMode ? 'vizrs-dark' : 'vizrs-light')),
     },
 })
 
 const showHeader = computed(() => route.meta.showHeader === true)
-const mainClass = computed(() => (showHeader.value ? 'h-[calc(100%-52px)]' : 'h-full'))
+const mainClass = computed(() => (showHeader.value ? 'h-[calc(100%-44px)]' : 'h-full'))
 </script>
 <template>
     <div class="min-h-screen bg-base-200">

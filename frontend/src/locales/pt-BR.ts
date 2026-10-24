@@ -17,6 +17,7 @@ export default {
         channels: 'Canais',
         configure: 'Configurar',
         logout: 'Sair',
+        epg: 'EPG',
     },
     error: {
         notFound: 'Página não encontrada',
@@ -128,6 +129,18 @@ export default {
         uploadError: 'Erro ao carregar',
         fileExists: 'O arquivo já existe!',
         recursive: 'Recursivo',
+    },
+    epg: {
+        title: 'Guia eletrônico de programação',
+        days: 'Dias',
+        refresh: 'Atualizar',
+        download: 'Baixar XMLTV',
+        empty: 'Nenhum programa no período selecionado.',
+        start: 'Início',
+        stop: 'Fim',
+        programme: 'Programa',
+        duration: 'Duração',
+        hint: 'Gerado a partir das playlists diárias (intervalos comerciais são ignorados). Os títulos vêm do título da playlist ou do nome do arquivo.',
     },
     message: {
         savePreset: 'Salvar predefinição',

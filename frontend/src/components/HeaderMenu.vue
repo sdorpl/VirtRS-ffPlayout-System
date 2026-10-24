@@ -1,9 +1,15 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+import dayjs from 'dayjs'
+import timezone from 'dayjs/plugin/timezone.js'
+import utc from 'dayjs/plugin/utc.js'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 
 import SvgIcon from '@/components/utils/SvgIcon.vue'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 import { useAuth } from '@/stores/auth'
 import { useIndex } from '@/stores/index'
@@ -19,11 +25,27 @@ const indexStore = useIndex()
 
 const menuDropdown = ref()
 const isOpen = ref(false)
+const clock = ref('')
+let clockTimer: ReturnType<typeof setInterval> | undefined
+
+function tick() {
+    clock.value = dayjs().tz(configStore.timezone).format('HH:mm:ss')
+}
+
+onMounted(() => {
+    tick()
+    clockTimer = setInterval(tick, 1000)
+})
+
+onBeforeUnmount(() => {
+    clearInterval(clockTimer)
+})
 
 const menuItems = ref([
     { label: 'home', name: t('button.home'), link: '/' },
     { label: 'player', name: t('button.player'), link: '/player' },
     { label: 'media', name: t('button.media'), link: '/media' },
+    { label: 'epg', name: t('button.epg'), link: '/epg' },
     { label: 'message', name: t('button.message'), link: '/message' },
     { label: 'logging', name: t('button.logging'), link: '/logging' },
 ])
@@ -82,166 +104,100 @@ function toggleTheme() {
 
     if (indexStore.darkMode) {
         localStorage.setItem('theme', 'dark')
-        document.documentElement.setAttribute('data-theme', 'ffp-dark')
+        document.documentElement.setAttribute('data-theme', 'vizrs-dark')
     } else {
         localStorage.setItem('theme', 'light')
-        document.documentElement.setAttribute('data-theme', 'ffp-light')
+        document.documentElement.setAttribute('data-theme', 'vizrs-light')
     }
 }
 </script>
 <template>
-    <div class="navbar bg-base-100 min-h-13 p-0 shadow-md">
-        <RouterLink class="navbar-brand min-w-11.5 p-2" to="/">
-            <img src="@/assets/images/ffplayout-small.png" class="img-fluid" alt="Logo" width="30" height="30" />
+    <header class="vz-topbar">
+        <RouterLink class="vz-brand flex items-center gap-2" to="/">
+            <span>Viz<b>RS</b><small>Playout</small></span>
         </RouterLink>
-        <div class="navbar-end w-1/5 grow">
-            <label class="swap swap-rotate me-2 2sm:hidden">
-                <input
-                    type="checkbox"
-                    :checked="indexStore.darkMode"
-                    class="focus-within:outline-0!"
-                    @change="toggleTheme"
-                />
-                <i class="swap-on bi bi-brightness-high text-[18px]"></i>
-                <i class="swap-off bi bi-moon text-[18px]"></i>
-            </label>
-            <details ref="menuDropdown" tabindex="0" class="dropdown dropdown-end z-50">
-                <summary class="btn btn-ghost 2sm:hidden" @click="clickMenu()" @blur="blurMenu()">
+        <span class="w-px h-5 bg-[#2e323a] hidden 2sm:block" />
+
+        <nav class="vz-nav hidden 2sm:flex items-center gap-1 grow">
+            <RouterLink
+                v-for="item in menuItems"
+                :key="item.label"
+                :to="channelLink(item.link)"
+                active-class="is-active"
+            >
+                {{ item.name }}
+            </RouterLink>
+        </nav>
+        <div class="grow 2sm:hidden" />
+
+        <div class="vz-nav flex items-center gap-1">
+            <details v-if="configStore.channels.length > 1" class="dropdown dropdown-end" @focusout="closeDropdown">
+                <summary class="vz-pill !h-auto">
+                    <i class="bi bi-broadcast" />
+                    {{ configStore.channels[configStore.i]?.name }}
+                </summary>
+                <ul
+                    class="menu menu-sm dropdown-content mt-1 z-50 p-1 bg-base-100 border border-(--vz-line) rounded-box w-44"
+                >
+                    <li v-for="channel in configStore.channels" :key="channel.id">
+                        <a class="text-base-content" @click="selectChannel(channel.id)">{{ channel.name }}</a>
+                    </li>
+                </ul>
+            </details>
+            <span v-else class="vz-pill hidden xs:inline">{{ configStore.channels[configStore.i]?.name }}</span>
+
+            <span class="vz-clock hidden xs:inline" :title="configStore.timezone">{{ clock }}</span>
+
+            <RouterLink
+                class="hidden 2sm:inline-flex"
+                :to="channelLink('/configure')"
+                active-class="is-active"
+                :title="t('button.configure')"
+            >
+                <i class="bi bi-gear text-[16px]" />
+            </RouterLink>
+            <button class="hidden 2sm:inline-flex" :title="indexStore.darkMode ? 'Light' : 'Dark'" @click="toggleTheme">
+                <i :class="indexStore.darkMode ? 'bi bi-brightness-high' : 'bi bi-moon'" class="text-[16px]" />
+            </button>
+            <button class="hidden 2sm:inline-flex" :title="t('button.logout')" @click="logout()">
+                <i class="bi bi-box-arrow-right text-[16px]" />
+            </button>
+
+            <details ref="menuDropdown" tabindex="0" class="dropdown dropdown-end 2sm:hidden">
+                <summary @click="clickMenu()" @blur="blurMenu()">
                     <SvgIcon name="burger" classes="w-5 h-5" />
                 </summary>
-                <ul class="menu menu-sm dropdown-content mt-1 z-1 p-2 shadow-sm bg-base-100 rounded-box w-52">
-                    <template v-for="item in menuItems" :key="item.name">
-                        <li class="bg-base-100 rounded-md py-1">
-                            <RouterLink
-                                :to="channelLink(item.link)"
-                                class="h-6.75 text-base"
-                                exact-active-class="is-active"
-                                @click="closeMenu()"
-                            >
-                                <span>
-                                    {{ item.name }}
-                                </span>
-                            </RouterLink>
-                        </li>
-                    </template>
-                    <li v-if="configStore.channels.length > 1" class="bg-base-100 rounded-md py-1">
-                        <details tabindex="0" @focusout="closeDropdown">
-                            <summary>
-                                <div class="h-4.75 text-base cursor-pointer">
-                                    <span> {{ configStore.channels[configStore.i]?.name }} </span>
-                                </div>
-                            </summary>
-                            <ul class="p-2">
-                                <li v-for="channel in configStore.channels" :key="channel.id">
-                                    <span>
-                                        <a class="dropdown-item cursor-pointer" @click="selectChannel(channel.id)">{{
-                                            channel.name
-                                        }}</a>
-                                    </span>
-                                </li>
-                            </ul>
-                        </details>
-                    </li>
-                    <li class="bg-base-100 rounded-md">
+                <ul
+                    class="menu menu-sm dropdown-content mt-1 z-50 p-1 bg-base-100 border border-(--vz-line) rounded-box w-52"
+                >
+                    <li v-for="item in menuItems" :key="item.label">
                         <RouterLink
-                            :to="channelLink('/configure')"
-                            class="h-6.75 leading-5"
-                            active-class="is-active"
-                            :title="t('button.configure')"
+                            :to="channelLink(item.link)"
+                            class="text-base-content"
+                            exact-active-class="is-active"
+                            @click="closeMenu()"
                         >
-                            <span>
-                                <i class="bi bi-gear text-[17px]" />
-                            </span>
+                            {{ item.name }}
                         </RouterLink>
                     </li>
-                    <li class="bg-base-100 rounded-md">
-                        <button
-                            class="h-6.75 text-base cursor-pointer"
-                            exactActiveClass="is-active"
-                            @click="logout()"
-                            :title="t('button.logout')"
-                        >
-                            <i class="bi bi-door-closed text-[18px]" />
-                        </button>
+                    <li>
+                        <RouterLink :to="channelLink('/configure')" class="text-base-content" @click="closeMenu()">
+                            <i class="bi bi-gear" /> {{ t('button.configure') }}
+                        </RouterLink>
+                    </li>
+                    <li>
+                        <a class="text-base-content" @click="toggleTheme">
+                            <i :class="indexStore.darkMode ? 'bi bi-brightness-high' : 'bi bi-moon'" />
+                            {{ indexStore.darkMode ? 'Light' : 'Dark' }}
+                        </a>
+                    </li>
+                    <li>
+                        <a class="text-base-content" @click="logout()">
+                            <i class="bi bi-box-arrow-right" /> {{ t('button.logout') }}
+                        </a>
                     </li>
                 </ul>
             </details>
         </div>
-        <div class="navbar-end hidden 2sm:flex w-4/5 min-w-187.5">
-            <ul class="menu menu-sm menu-horizontal px-1">
-                <template v-for="item in menuItems" :key="item.name">
-                    <li class="bg-base-100 rounded-md p-0">
-                        <RouterLink
-                            :to="channelLink(item.link)"
-                            class="px-2 h-6.75 relative text-base text-base-content"
-                            active-class="is-active"
-                        >
-                            <span>
-                                {{ item.name }}
-                            </span>
-                        </RouterLink>
-                    </li>
-                </template>
-
-                <li v-if="configStore.channels.length > 1">
-                    <details tabindex="0" @focusout="closeDropdown">
-                        <summary>
-                            <div class="h-4.75 text-base cursor-pointer">
-                                <span> {{ configStore.channels[configStore.i]?.name }} </span>
-                            </div>
-                        </summary>
-                        <ul class="p-2 bg-base-100 rounded-md mt-1! w-36" tabindex="0">
-                            <li v-for="channel in configStore.channels" :key="channel.id">
-                                <a class="dropdown-item cursor-pointer" @click="selectChannel(channel.id)">
-                                    {{ channel.name }}
-                                </a>
-                            </li>
-                        </ul>
-                    </details>
-                </li>
-                <li class="bg-base-100 rounded-md p-0">
-                    <RouterLink
-                        :to="channelLink('/configure')"
-                        class="h-6.75 leading-5"
-                        active-class="is-active"
-                        :title="t('button.configure')"
-                    >
-                        <span>
-                            <i class="bi bi-gear text-[17px]" />
-                        </span>
-                    </RouterLink>
-                </li>
-                <li class="p-0">
-                    <label class="swap swap-rotate h-6.75 leading-5">
-                        <input
-                            type="checkbox"
-                            :checked="indexStore.darkMode"
-                            @change="toggleTheme"
-                            class="focus-within:outline-0!"
-                        />
-                        <i class="swap-on bi bi-brightness-high text-[18px]"></i>
-                        <i class="swap-off bi bi-moon text-[18px]"></i>
-                    </label>
-                </li>
-                <li class="bg-base-100 rounded-md p-0">
-                    <button class="h-6.75 leading-5 cursor-pointer" @click="logout()" :title="t('button.logout')">
-                        <i class="bi bi-door-closed text-[18px]" />
-                    </button>
-                </li>
-            </ul>
-        </div>
-    </div>
+    </header>
 </template>
-<style scoped>
-.is-active > span::after {
-    background: var(--my-accent);
-    position: relative;
-    left: 0px;
-    content: ' ';
-    width: inherit;
-    height: 2px;
-    color: red;
-    display: block;
-    border-radius: 0.15em;
-}
-</style>
