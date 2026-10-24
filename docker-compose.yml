@@ -3,7 +3,7 @@
 #   docker compose up -d        (or Portainer: Stacks → Add stack → paste this file → Deploy)
 #
 #   Playout panel   http://<server>:8787   login admin / admin
-#   VizRS Trio      http://<server>:8088/trio   token vizrs-operator-change-me
+#   VizRS Trio      http://<server>:8788/trio   token vizrs-operator-change-me
 #   Channel stream  http://<server>:8787/public/1/live/stream.m3u8
 #
 # Channel 1 is connected to VizRS on the first start (commands + burn-in of /output)
@@ -29,7 +29,7 @@ services:
     volumes:
       - vizrs-data:/data
     ports:
-      - "8088:8088"
+      - "8788:8088"
 
   playout:
     image: ghcr.io/sdorpl/vizrs-ffplayout:main
